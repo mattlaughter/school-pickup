@@ -1,0 +1,12 @@
+node_modules/
+data/
+*.db
+*.db-wal
+*.db-shm
+.DS_Store
+.fuse_hidden*
+npm-debug.log*
+*.log
+.env
+.env.*
+!.env.example

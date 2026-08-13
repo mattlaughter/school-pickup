@@ -1,0 +1,33 @@
+{
+  "name": "pickup",
+  "version": "1.0.0",
+  "description": "Two-lane car-line dismissal board for schools — self-hosted, one container.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "seed": "node seed.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.3.0",
+    "express": "^4.21.0",
+    "ws": "^8.18.0"
+  },
+  "license": "MIT",
+  "keywords": [
+    "school",
+    "dismissal",
+    "car-line",
+    "pickup",
+    "education",
+    "self-hosted",
+    "sqlite",
+    "docker"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mattlaughter/school-pickup.git"
+  }
+}

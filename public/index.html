@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#12110f" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f1eee7" media="(prefers-color-scheme: light)">
+<title>Pickup</title>
+<link rel="icon" href="/api/branding/logo" id="favicon">
+<script>
+  /* Set the theme BEFORE the stylesheet paints, otherwise a light-mode user
+     gets a dark flash on every page load. Must stay inline and stay here. */
+  (function () {
+    var t = null;
+    try { t = localStorage.getItem('pp_theme'); } catch (e) {}
+    if (t !== 'light' && t !== 'dark') {
+      t = (window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark';
+    }
+    document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+  <img class="logo brand-logo" src="/api/branding/logo" alt="">
+  <div>
+    <h1 id="appTitle">Pickup</h1>
+    <div class="school" id="schoolName"></div>
+  </div>
+  <span class="clock" id="clock"></span>
+  <span class="conn" id="conn">connecting</span>
+  <nav>
+    <button data-v="walker" class="on">Line Walker</button>
+    <button data-v="marshal">Marshal</button>
+    <button data-v="admin">Admin</button>
+    <a href="/display" target="_blank"><button class="act">Open TV Display</button></a>
+    <button class="act" id="themeBtn" title="Switch between light and dark" aria-label="Switch theme"></button>
+  </nav>
+</header>
+
+<main>
+  <!-- ================= LINE WALKER ================= -->
+  <section class="view on" id="v-walker">
+    <div class="toolbar">
+      <span class="muted">Lane:</span>
+      <span class="laneTabs" id="walkerLanes"></span>
+      <span class="muted" id="walkerMode" style="font-size:12px"></span>
+    </div>
+    <div class="walkwrap">
+      <div class="card">
+        <h3>Enter hang tag</h3>
+        <input id="tagIn" inputmode="none" pattern="[0-9]*" placeholder="000" autocomplete="off">
+        <div id="tagMsg" style="min-height:38px;margin-top:8px;font:600 12px/1.4 inherit"></div>
+        <div class="keys" id="keys"></div>
+      </div>
+      <div class="card" style="padding:0">
+        <h3 style="padding:16px 16px 0">Lane queue</h3>
+        <div id="walkerQueue"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= MARSHAL ================= -->
+  <section class="view" id="v-marshal">
+    <div class="toolbar">
+      <span class="muted">Lane:</span>
+      <span class="laneTabs" id="marshalLanes"></span>
+      <span class="muted" style="font-size:12px">Tap each child as they get in. The car clears itself once everyone is in.</span>
+    </div>
+    <div id="marshalBody"></div>
+  </section>
+
+  <!-- ================= ADMIN ================= -->
+  <section class="view" id="v-admin">
+    <div id="adminLocked" class="pinwrap">
+      <img class="brand-logo" src="/api/branding/logo" alt="">
+      <h3 class="hd" style="color:var(--gold);font-size:14px">Admin access</h3>
+      <p class="muted" style="font-size:12px">Enter the admin PIN to manage the rider list.</p>
+      <input id="pinIn" type="password" inputmode="numeric" placeholder="PIN"
+             style="text-align:center;font-size:22px;letter-spacing:8px;width:180px">
+      <div style="margin-top:12px"><button class="act primary" id="pinGo">Unlock</button></div>
+      <div id="pinMsg" class="muted" style="font-size:12px;margin-top:10px"></div>
+    </div>
+
+    <div id="adminPanel" style="display:none">
+      <div class="card">
+        <h3>Import rider list</h3>
+        <div class="toolbar">
+          <a href="/api/roster/template.csv"><button class="act primary">Download CSV template</button></a>
+          <button class="act" id="exportCsv">Export current list</button>
+          <span class="muted" style="font-size:12px">
+            Using the .xlsx template? In Excel: File &rsaquo; Save As &rsaquo; CSV, then drop the CSV here.
+          </span>
+        </div>
+        <div class="drop" id="drop">
+          <b>Drop a CSV file here</b><br>
+          <span class="muted" style="font-size:12px">or click to browse &middot; columns: Hang Tag, Last Name, First Name, Grade, Notes</span>
+          <input type="file" id="fileIn" accept=".csv,text/csv" hidden>
+        </div>
+        <div style="margin-top:12px">
+          <div class="muted" style="font-size:11px;margin-bottom:5px">&hellip;or paste rows directly:</div>
+          <textarea id="pasteIn" rows="4" style="width:100%"
+            placeholder="101,Whitfield,Ava,3,3-01,A,&#10;101,Whitfield,Caleb,K,K-02,A,"></textarea>
+          <div class="toolbar" style="margin-top:8px">
+            <button class="act" id="parsePaste">Preview paste</button>
+            <label class="chk"><input type="checkbox" id="replaceMode" checked> Replace entire list (uncheck to merge)</label>
+          </div>
+        </div>
+        <div id="importResult"></div>
+      </div>
+
+      <div class="card">
+        <h3>Backup &amp; restore</h3>
+        <div class="toolbar">
+          <button class="act primary" id="backupBtn">Download backup</button>
+          <button class="act danger" id="restoreBtn">Restore from file&hellip;</button>
+          <input type="file" id="restoreFile" accept=".db" hidden>
+          <span class="muted" style="font-size:12px">
+            The backup is the entire system in one file. Keep a copy somewhere other than this server.
+          </span>
+        </div>
+        <div id="backupResult"></div>
+      </div>
+
+      <div class="card">
+        <h3>Add a student</h3>
+        <div class="toolbar">
+          <input id="nTag" placeholder="Hang tag" style="width:105px" inputmode="numeric">
+          <input id="nFirst" placeholder="First name" style="width:150px">
+          <input id="nLast" placeholder="Last name" style="width:150px">
+          <input id="nGrade" placeholder="Grade" style="width:80px">
+          <button class="act primary" id="addStudent">Add</button>
+        </div>
+        <div id="addMsg" class="muted" style="font-size:12px"></div>
+      </div>
+
+      <div class="card">
+        <h3>Settings</h3>
+        <div class="toolbar">
+          <label class="muted" style="font-size:12px">Lane A name</label>
+          <input id="setLaneA" style="width:140px">
+          <label class="muted" style="font-size:12px">Lane B name</label>
+          <input id="setLaneB" style="width:140px">
+          <label class="muted" style="font-size:12px">Names per group</label>
+          <input id="setGroup" type="number" min="2" max="6" style="width:70px">
+          <span class="muted" style="font-size:11px">
+            Max 6 &mdash; one per coloured spot in the waiting area.
+          </span>
+        </div>
+        <div class="toolbar">
+          <label class="muted" style="font-size:12px">Admin PIN</label>
+          <input id="setPin" style="width:100px">
+          <button class="act primary" id="saveSettings">Save settings</button>
+          <button class="act danger" id="clearLanes">Clear both lanes</button>
+        </div>
+        <div id="settingsMsg" class="muted" style="font-size:12px"></div>
+      </div>
+
+      <div class="card">
+        <h3>Branding</h3>
+        <div class="toolbar">
+          <label class="muted" style="font-size:12px">App name</label>
+          <input id="setAppName" maxlength="40" style="width:200px" placeholder="Pickup">
+          <label class="muted" style="font-size:12px">Subtitle</label>
+          <input id="setSchoolName" maxlength="80" style="width:260px" placeholder="Your School or District">
+          <span class="muted" style="font-size:11px">Title + the smaller line beneath it, shown across the app.</span>
+        </div>
+
+        <div class="toolbar" style="align-items:flex-start">
+          <div style="text-align:center">
+            <div class="muted" style="font-size:12px;margin-bottom:6px">Logo</div>
+            <img id="logoPreview" class="brand-logo" src="/api/branding/logo" alt=""
+                 style="height:60px;max-width:180px;object-fit:contain;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:6px">
+            <div id="logoDims" class="muted" style="font-size:11px;margin-top:4px"></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <button class="act" id="logoBtn">Upload logo&hellip;</button>
+            <button class="act danger" id="logoReset">Reset to default</button>
+            <input type="file" id="logoFile" accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml" hidden>
+            <span class="muted" style="font-size:11px;max-width:250px">
+              PNG, JPG, SVG, GIF or WEBP under 500&nbsp;KB. Best as a <b>square around 256&times;256&nbsp;px</b> &mdash;
+              it's scaled to fit the header (34&nbsp;px), the TV board and the browser tab. Any size works.
+            </span>
+          </div>
+        </div>
+
+        <div class="muted" style="font-size:12px;margin:10px 0 2px;font-weight:700;letter-spacing:.5px">
+          Color scheme <span style="font-weight:400">&mdash; pick a swatch or type a hex code. Light and dark are set separately.</span>
+        </div>
+        <div id="paletteEditor"></div>
+        <div class="toolbar" style="margin-top:12px">
+          <button class="act primary" id="saveBranding">Save branding</button>
+          <button class="act" id="resetColors">Reset colors to default</button>
+        </div>
+        <div id="brandingMsg" class="muted" style="font-size:12px"></div>
+      </div>
+
+      <div class="toolbar">
+        <input id="search" placeholder="Search name or tag&hellip;" style="min-width:280px">
+        <span class="muted" id="rosterCount"></span>
+        <button class="act" id="showLog" style="margin-left:auto">Activity log</button>
+      </div>
+      <div id="logBox"></div>
+      <table id="rosterTable"></table>
+    </div>
+  </section>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>

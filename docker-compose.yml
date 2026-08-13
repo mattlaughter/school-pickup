@@ -1,0 +1,42 @@
+# ---------------------------------------------------------------------------
+# Pickup
+#
+#   docker compose up -d --build
+#
+# Then open  http://<this-server-ip>:8888  from any device on the same network.
+# There is no DNS name and no hostname to configure — it answers on whatever IP
+# the machine running it already has.
+# ---------------------------------------------------------------------------
+services:
+  pickup:
+    build: .
+    image: pickup:1.0.0
+    container_name: pickup
+    restart: unless-stopped
+
+    ports:
+      # host:container — change only the left number if 8888 is already taken.
+      - "8888:8888"
+
+    volumes:
+      # The ONLY thing that must survive. Everything else can be rebuilt from
+      # this repo. Back it up via Admin > Download backup, or by copying this
+      # named volume.
+      - pickup-data:/data
+
+    environment:
+      TZ: America/Chicago            # ← change to your local timezone (controls the nightly queue reset)
+
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:8888/api/health',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+volumes:
+  pickup-data:

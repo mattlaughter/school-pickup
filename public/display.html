@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>Pickup — Display</title>
+<link rel="icon" href="/api/branding/logo" id="dfav">
+<script>
+  /* Applied before paint so the gym panel never flashes the wrong theme.
+     The display keeps its own theme preference, separate from the staff app —
+     a bright gym may want the light board while staff use dark on tablets. */
+  (function () {
+    var t = null;
+    try { t = localStorage.getItem('pp_display_theme'); } catch (e) {}
+    document.documentElement.setAttribute('data-theme', t === 'light' ? 'light' : 'dark');
+  })();
+</script>
+<style>
+  /* Standalone stylesheet. The display must never depend on anything the staff
+     app needs, so it can keep running untouched while the app is being edited. */
+  :root,:root[data-theme="dark"]{
+    --bg:#0F1420; --fg:#E8EDF4;
+    --accent:#8098F7;
+    --laneA:#2DD4BF; --laneB:#FBBF24;
+    --dim:#9BA6B7; --rule:#2A3342; --faint:#555d6c; --hr:#9BA6B7;
+    --ctl-bg:#171E2B; --ctl-line:#2A3342; --ctl-fg:#9BA6B7; --on-accent:#231f14;
+    --ok:#7fa06a; --warn:#c1533f;
+    --next-opacity:.42;
+  }
+  /* Light board: these are the defaults for the built-in light theme. Each school
+     overrides them from Admin > Branding; lane colours are nudged for contrast
+     against the chosen background by the branding code. */
+  :root[data-theme="light"]{
+    --bg:#F7F8FA; --fg:#1A2333;
+    --accent:#4F46E5;
+    --laneA:#0F766E; --laneB:#935f07;
+    --dim:#5B6472; --rule:#E4E7EC; --faint:#a9aeb6; --hr:#5B6472;
+    --ctl-bg:#FFFFFF; --ctl-line:#E4E7EC; --ctl-fg:#5B6472; --on-accent:#ffffff;
+    --ok:#4f7a3c; --warn:#a83b27;
+    --next-opacity:.5;
+  }
+
+  /* Waiting-area spot colours — the real paint on the ground. Identical in both
+     themes on purpose: a green spot must look green on every screen. Each dot
+     also shows its number, because spots 1 and 6 are green and red and colour
+     alone would fail a colour-blind child. */
+  :root{
+    --spot-1:#7CB342; --spot-2:#E9A23B; --spot-3:#F2DD57;
+    --spot-4:#74A5DE; --spot-5:#CE8CE8; --spot-6:#D2453A;
+    --spot-ink:#1a1815;
+  }
+
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--fg);
+    font-family:Montserrat,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    -webkit-user-select:none;user-select:none;-webkit-text-size-adjust:100%}
+  #wrap{display:flex;flex-direction:column;height:100%;padding:14px}
+
+  .dhead{display:flex;align-items:center;gap:14px;padding:0 4px 9px;border-bottom:2px solid var(--accent);flex:none}
+  .dhead img{height:clamp(30px,4.4vh,54px)}
+  .dhead .t{font-family:"Bradley U",Montserrat,sans-serif;font-size:clamp(17px,3.4vh,38px);
+            font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:3px}
+  .dhead .right{margin-left:auto;display:flex;align-items:center;gap:14px}
+  .dhead .clock{font-size:clamp(15px,3vh,32px);color:var(--dim);font-variant-numeric:tabular-nums}
+  .dot{width:12px;height:12px;border-radius:50%;background:var(--ok);flex:none}
+  .dot.down{background:var(--warn);animation:blink 1.2s infinite}
+  @keyframes blink{50%{opacity:.25}}
+
+  #stale{display:none;background:var(--warn);color:#fff;text-align:center;
+         font-size:clamp(12px,2vh,20px);font-weight:700;padding:6px;letter-spacing:1px;flex:none;
+         text-transform:uppercase}
+  #stale.on{display:block}
+
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;flex:1;min-height:0;padding-top:12px}
+  .col{border:3px solid var(--rule);border-radius:14px;padding:10px 16px;display:flex;flex-direction:column;
+       overflow:hidden;min-height:0}
+  .col.a{border-color:var(--laneA)} .col.a .lname{color:var(--laneA)}
+  .col.b{border-color:var(--laneB)} .col.b .lname{color:var(--laneB)}
+  .lname{font-family:"Bradley U",Montserrat,sans-serif;font-weight:800;letter-spacing:2px;
+         text-transform:uppercase;font-size:clamp(16px,3.2vh,36px);flex:none;margin-bottom:1px}
+  .sect{font-size:clamp(9px,1.4vh,14px);letter-spacing:4px;text-transform:uppercase;color:var(--dim);
+        margin:4px 0 1px;border-top:1px solid var(--rule);padding-top:4px;font-weight:700;flex:none}
+  .sect:first-of-type{border-top:0;margin-top:0}
+  .list{flex:1;min-height:0;overflow:hidden}
+  .nm{font-weight:700;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+      font-size:clamp(12px,2.35vh,24px);display:flex;align-items:center;gap:.4em}
+  .nm .who{overflow:hidden;text-overflow:ellipsis}
+  .nm .hr{color:var(--hr);font-weight:400;font-size:.58em;margin-left:9px}
+  /* Sized in em so the dot scales with the name text and with the A+/A− control.
+     Kept close to the cap-height of the name beside it — the dot has to read as
+     the same colour as the painted spot from the far side of the gym. */
+  .spot{flex:none;display:inline-grid;place-items:center;border-radius:50%;
+        width:1.45em;height:1.45em;font:800 .62em/1 Montserrat,sans-serif;
+        color:var(--spot-ink);border:1px solid rgba(0,0,0,.25)}
+  .spot[data-s="1"]{background:var(--spot-1)}
+  .spot[data-s="2"]{background:var(--spot-2)}
+  .spot[data-s="3"]{background:var(--spot-3)}
+  .spot[data-s="4"]{background:var(--spot-4)}
+  .spot[data-s="5"]{background:var(--spot-5)}
+  .spot[data-s="6"]{background:var(--spot-6);color:#fff}  /* dark ink only reaches 3.9:1 on this red */
+  /* All four waves share the column height equally, so every group — not just
+     "Loading now" — has room to show a full wave of up to six names. The names
+     are sized to fit six per group at 1080p; the on-deck waves keep their
+     coloured spot numbers and step back gently wave by wave so the eye still
+     lands on "now" first, without any wave losing entries. */
+  .list.main{flex:1}
+  .list.ondeck{flex:1}
+  .ondeck .nm{font-weight:600}
+  .ondeck.d1{opacity:.9}
+  .ondeck.d2{opacity:.82}
+  .ondeck.d3{opacity:.74}
+  .none{color:var(--faint);font-size:clamp(13px,2.4vh,24px);padding:4px 0}
+
+  /* Controls hide themselves. Tap anywhere to bring them back — the panel is a
+     touch screen, so there is no cursor to reveal them on hover. */
+  #ctl{position:fixed;bottom:12px;right:12px;display:flex;gap:8px;opacity:0;transition:opacity .25s;
+       pointer-events:none;z-index:5}
+  #ctl.show{opacity:1;pointer-events:auto}
+  #ctl button{background:var(--ctl-bg);border:1px solid var(--ctl-line);color:var(--ctl-fg);border-radius:8px;
+              padding:12px 16px;font:600 14px Montserrat,sans-serif;cursor:pointer}
+  #ctl button:active{background:var(--accent);color:var(--on-accent)}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div class="dhead">
+    <img src="/api/branding/logo" id="dlogo" alt="">
+    <span class="t" id="dtitle">Pickup</span>
+    <span class="right"><span class="clock" id="clock"></span><span class="dot" id="dot"></span></span>
+  </div>
+  <div id="stale">Connection lost — showing last known list</div>
+  <div class="cols" id="cols"></div>
+</div>
+
+<div id="ctl">
+  <button id="fsBtn">Full screen</button>
+  <button id="themeBtn">Light</button>
+  <button id="biggerBtn">A+</button>
+  <button id="smallerBtn">A&minus;</button>
+</div>
+
+<script src="display.js"></script>
+</body>
+</html>

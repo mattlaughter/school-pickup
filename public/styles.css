@@ -1,0 +1,235 @@
+/* ---------------------------------------------------------------------------
+   Pickup — stylesheet
+
+   THEMING
+   Every colour in the app comes from a variable below. There are no hard-coded
+   colours anywhere else in the CSS, the HTML, or the JavaScript — including the
+   lane colours, which are --laneA / --laneB rather than values sent by the
+   server. That is what makes a theme switch a one-attribute change.
+
+   The values below are only DEFAULTS. Each school picks its own full colour
+   scheme (light and dark, independently) in Admin > Branding, which sets these
+   same variables live on every screen. The default accent (#D3BC8D) is a light
+   colour: on the dark theme it works as text; on the light theme a bright accent
+   fails contrast against white, so the branding code derives a darkened variant
+   for text and keeps the chosen colour for fills, where dark text sits on top.
+   Every colour pair is kept at WCAG AA contrast automatically.
+--------------------------------------------------------------------------- */
+
+/* ============================ DARK (default) ============================ */
+:root,
+:root[data-theme="dark"]{
+  --bg:#0F1420;
+  --panel:#171E2B;
+  --panel2:#2c333f;
+  --line:#2A3342;
+  --text:#E8EDF4;
+  --muted:#9BA6B7;
+
+  --accent:#8098F7;            /* headings, active borders — default accent (indigo) */
+  --accent-fill:#8098F7;       /* button/badge background */
+  --on-accent:#231f14;         /* text on top of --accent-fill */
+
+  --laneA:#2DD4BF;             /* default Lane A colour (teal) */
+  --laneB:#FBBF24;             /* default Lane B colour (amber) */
+  --on-lane:#231f14;
+  /* Text colour that sits ON each lane's fill. Split per lane so a custom
+     palette with a light Lane A and a dark Lane B keeps both readable — the
+     branding code recomputes each from the chosen colour's luminance. */
+  --on-laneA:#231f14;
+  --on-laneB:#231f14;
+
+  --ok:#7fa06a;   --ok-bg:#1f2718;   --ok-text:#b6cfa3;
+  --warn:#c1533f; --warn-bg:#2a1a16; --warn-text:#e5907e;
+
+  --kid-bg:#212835;
+  --kid-in-bg:#1f3326;
+  --shadow:none;
+}
+
+/* ---------------------------------------------------------------------------
+   WAITING-AREA SPOT COLOURS
+   These match the physical coloured spots painted on the ground. A child stands
+   on the spot matching the dot beside their name.
+
+   They are intentionally the SAME in light and dark mode — they represent real
+   paint, not a UI accent, and a green spot must look green on every screen.
+
+   Every dot also carries its spot NUMBER. Positions 1 and 6 are green and red,
+   the classic red/green confusion pair, so colour alone would fail a
+   colour-blind child. The number makes it unambiguous for everyone.
+--------------------------------------------------------------------------- */
+:root{
+  --spot-1:#7CB342;   /* green  */
+  --spot-2:#E9A23B;   /* orange */
+  --spot-3:#F2DD57;   /* yellow */
+  --spot-4:#74A5DE;   /* blue   */
+  --spot-5:#CE8CE8;   /* purple */
+  --spot-6:#D2453A;   /* red    */
+  --spot-ink:#1a1815; /* number printed inside the dot */
+}
+
+/* ============================== LIGHT ============================== */
+:root[data-theme="light"]{
+  --bg:#F7F8FA;
+  --panel:#FFFFFF;
+  --panel2:#e8e9eb;
+  --line:#E4E7EC;
+  --text:#1A2333;
+  --muted:#5B6472;
+
+  --accent:#4F46E5;            /* indigo — readable on the light background */
+  --accent-fill:#4F46E5;       /* same indigo as a fill, white text on top */
+  --on-accent:#ffffff;
+
+  --laneA:#0F766E;             /* teal (white text) */
+  --laneB:#F59E0B;             /* amber (dark text) */
+  --on-lane:#ffffff;
+  --on-laneA:#ffffff;
+  --on-laneB:#231f14;
+
+  --ok:#4f7a3c;   --ok-bg:#e6efdf;   --ok-text:#2f5222;
+  --warn:#a83b27; --warn-bg:#f7e3de; --warn-text:#8c2f1e;
+
+  --kid-bg:#f4f4f5;
+  --kid-in-bg:#e2ecd9;
+  --shadow:0 1px 2px rgba(16,24,40,.06);
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--text);
+     font:14px/1.45 Montserrat,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+     -webkit-text-size-adjust:100%;
+     transition:background .18s,color .18s}
+h1,h2,.hd{font-family:"Bradley U",Montserrat,sans-serif;text-transform:uppercase;letter-spacing:1px}
+
+header{display:flex;align-items:center;gap:14px;padding:9px 16px;background:var(--panel);
+       border-bottom:2px solid var(--accent);position:sticky;top:0;z-index:20;flex-wrap:wrap;
+       box-shadow:var(--shadow)}
+header img.logo{height:34px}
+header h1{font-size:17px;margin:0;font-weight:800;color:var(--accent)}
+header .school{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase}
+.clock{font-variant-numeric:tabular-nums;color:var(--muted);font-size:13px}
+nav{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap;align-items:center}
+nav button{background:transparent;border:1px solid transparent;color:var(--muted);padding:7px 13px;
+           border-radius:6px;cursor:pointer;font:600 12px/1 inherit;text-transform:uppercase;letter-spacing:.6px}
+nav button:hover{color:var(--text);background:var(--panel2)}
+nav button.on{background:var(--accent-fill);color:var(--on-accent)}
+nav a{text-decoration:none}
+main{padding:16px;max-width:1400px;margin:0 auto}
+.view{display:none}.view.on{display:block}
+
+/* theme toggle — icon only, sized so the glyph swap doesn't shift the layout */
+#themeBtn{font-size:15px;line-height:1;padding:7px 11px;letter-spacing:0;min-width:38px}
+
+/* connection pill — always visible so nobody has to guess */
+.conn{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+      padding:4px 9px;border-radius:20px;border:1px solid var(--line);color:var(--muted)}
+.conn.live{border-color:var(--ok);color:var(--ok-text)}
+.conn.down{border-color:var(--warn);color:var(--warn-text);animation:pulse 1.4s infinite}
+@keyframes pulse{50%{opacity:.45}}
+
+button.act{background:var(--panel2);border:1px solid var(--line);color:var(--text);padding:8px 14px;
+           border-radius:6px;cursor:pointer;font:600 12px/1.2 inherit}
+button.act:hover{border-color:var(--accent)}
+button.act.primary{background:var(--accent-fill);border-color:var(--accent-fill);color:var(--on-accent)}
+button.act.danger:hover{border-color:var(--warn);color:var(--warn-text)}
+button.act:disabled{opacity:.4;cursor:not-allowed}
+input,select,textarea{background:var(--panel2);border:1px solid var(--line);color:var(--text);
+      padding:9px 10px;border-radius:6px;font:13px inherit}
+input::placeholder{color:var(--muted);opacity:.75}
+label.chk{font-size:12px;color:var(--muted);display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+/* colour-picker swatch — fixed square so swatches sit in a tidy row */
+input[type=color]{width:40px;height:30px;padding:2px;border:1px solid var(--line);border-radius:6px;
+      background:var(--panel2);cursor:pointer;flex:none}
+input[type=color]::-webkit-color-swatch-wrapper{padding:0}
+input[type=color]::-webkit-color-swatch{border:none;border-radius:4px}
+
+/* palette editor — light + dark columns, one row per colour token */
+#paletteEditor{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:4px}
+@media(max-width:720px){#paletteEditor{grid-template-columns:1fr}}
+.palcol{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--panel2)}
+.palhd{font:700 11px/1 "Bradley U",Montserrat,sans-serif;text-transform:uppercase;letter-spacing:1px;
+       color:var(--accent);margin-bottom:9px}
+.palrow{display:flex;align-items:center;gap:8px;margin:7px 0}
+.pallbl{flex:1;font-size:12px;color:var(--text)}
+.palhex{width:92px;font-variant-numeric:tabular-nums;text-transform:uppercase;font-size:12px;
+        padding:6px 8px;letter-spacing:.5px}
+
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;
+      margin-bottom:14px;box-shadow:var(--shadow)}
+.card h3{margin:0 0 12px;font:700 13px/1 "Bradley U",Montserrat,sans-serif;
+         text-transform:uppercase;letter-spacing:1.2px;color:var(--accent)}
+.muted{color:var(--muted)}
+.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.laneTabs{display:inline-flex;gap:6px}
+.laneTabs button{padding:9px 22px;border-radius:6px;border:1px solid var(--line);background:var(--panel2);
+                 color:var(--muted);cursor:pointer;font:700 13px/1 inherit;letter-spacing:1px}
+.laneTabs button.on[data-l="A"]{background:var(--laneA);color:var(--on-laneA);border-color:var(--laneA)}
+.laneTabs button.on[data-l="B"]{background:var(--laneB);color:var(--on-laneB);border-color:var(--laneB)}
+
+table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);
+      border-radius:8px;overflow:hidden;box-shadow:var(--shadow)}
+th,td{padding:7px 11px;text-align:left;border-bottom:1px solid var(--line);font-size:13px}
+th{background:var(--panel2);color:var(--accent);font:700 10px/1 inherit;text-transform:uppercase;letter-spacing:1px}
+tr:last-child td{border-bottom:0}
+.empty{color:var(--muted);padding:20px;text-align:center}
+.tag{background:var(--panel2);border:1px solid var(--line);border-radius:4px;padding:1px 7px;
+     font-weight:700;font-variant-numeric:tabular-nums}
+.lane-a{color:var(--laneA);font-weight:700}
+.lane-b{color:var(--laneB);font-weight:700}
+
+/* walker */
+.walkwrap{display:grid;grid-template-columns:330px 1fr;gap:16px}
+@media(max-width:860px){.walkwrap{grid-template-columns:1fr}}
+#tagIn{font-size:38px;text-align:center;width:100%;padding:12px;font-variant-numeric:tabular-nums;
+       letter-spacing:5px;font-weight:700}
+.keys{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px}
+.keys button{padding:19px 0;font:700 21px/1 inherit;background:var(--panel2);border:1px solid var(--line);
+             color:var(--text);border-radius:8px;cursor:pointer;touch-action:manipulation}
+.keys button:active{background:var(--accent-fill);color:var(--on-accent)}
+.keys button.go{background:var(--accent-fill);border-color:var(--accent-fill);color:var(--on-accent)}
+.qitem{display:flex;align-items:center;gap:9px;padding:8px 12px;border-bottom:1px solid var(--line)}
+.qitem:last-child{border-bottom:0}
+.pos{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font:700 12px/1 inherit;
+     background:var(--panel2);flex:none}
+.pos.loading[data-l="A"]{background:var(--laneA);color:var(--on-laneA)}
+.pos.loading[data-l="B"]{background:var(--laneB);color:var(--on-laneB)}
+.tagno{font:800 16px/1 inherit;min-width:56px;font-variant-numeric:tabular-nums;color:var(--accent)}
+.names{flex:1;font-size:13px}
+.grp{font:700 10px/1 inherit;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);
+     padding:11px 12px 5px;border-top:1px solid var(--line)}
+
+/* spot dot — used on the walker queue, the marshal cards and the TV board */
+.spot{display:inline-grid;place-items:center;flex:none;border-radius:50%;
+      width:20px;height:20px;font:800 11px/1 Montserrat,sans-serif;
+      color:var(--spot-ink);border:1px solid rgba(0,0,0,.22)}
+.spot[data-s="1"]{background:var(--spot-1)}
+.spot[data-s="2"]{background:var(--spot-2)}
+.spot[data-s="3"]{background:var(--spot-3)}
+.spot[data-s="4"]{background:var(--spot-4)}
+.spot[data-s="5"]{background:var(--spot-5)}
+.spot[data-s="6"]{background:var(--spot-6);color:#fff}  /* dark ink only reaches 3.9:1 on this red */
+.spot.lg{width:26px;height:26px;font-size:14px}
+
+/* marshal */
+.mcar{border:1px solid var(--line);border-radius:8px;padding:11px;margin-bottom:9px;background:var(--panel)}
+.mcar.on{border-color:var(--accent)}
+.kid{display:inline-flex;align-items:center;gap:6px;padding:9px 14px;border:1px solid var(--line);
+     border-radius:6px;margin:5px 5px 0 0;cursor:pointer;font:600 13px/1 inherit;background:var(--kid-bg);
+     touch-action:manipulation}
+.kid.in{background:var(--kid-in-bg);border-color:var(--ok);color:var(--ok-text);text-decoration:line-through}
+.kid small{color:var(--muted);font:400 10px/1 inherit}
+
+/* admin */
+.drop{border:2px dashed var(--line);border-radius:10px;padding:26px;text-align:center;cursor:pointer}
+.drop:hover,.drop.over{border-color:var(--accent);background:var(--panel2)}
+.errbox{background:var(--warn-bg);border:1px solid var(--warn);border-radius:8px;padding:11px;
+        margin-top:11px;font-size:12px;max-height:230px;overflow:auto;color:var(--warn-text)}
+.okbox{background:var(--ok-bg);border:1px solid var(--ok);border-radius:8px;padding:11px;
+       margin-top:11px;font-size:12px;color:var(--ok-text)}
+.pinwrap{max-width:340px;margin:70px auto;text-align:center}
+.pinwrap img{height:84px;margin-bottom:16px}
+.logline{font-size:12px;padding:4px 0;border-bottom:1px solid var(--line)}
+.logline time{color:var(--muted);display:inline-block;min-width:150px}
