@@ -30,6 +30,10 @@ Default admin PIN is `1234` — **change it** before go-live.
 - **Single container** — SQLite, Express, WebSockets; one volume to back up
 
 ---
+## Screenshots
+<img width="1280" height="800" alt="board-light" src="https://github.com/user-attachments/assets/f9b30131-9ce8-4ade-8840-408e8f3065a3" />
+<img width="1280" height="800" alt="line-walker" src="https://github.com/user-attachments/assets/af98711b-630a-40ee-91b8-9ea7198cf394" />
+<img width="1920" height="1080" alt="board" src="https://github.com/user-attachments/assets/37b32289-e4d9-4df0-ac11-9fe406378e34" />
 
 ## Quick start
 
