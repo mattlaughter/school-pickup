@@ -10,7 +10,7 @@ Everything runs in **one Docker container**. No second service, no build step fo
 
 ```bash
 docker compose up -d --build
-# Staff app:  http://<server-ip>:8888/
+# Staff app: http://<server-ip>:8888/
 # TV display: http://<server-ip>:8888/display
 ```
 
@@ -39,7 +39,7 @@ Default admin PIN is `1234` — **change it** before go-live.
 
 ```bash
 git clone https://github.com/mattlaughter/school-pickup.git
-cd pickup
+cd school-pickup
 docker compose up -d --build
 ```
 
@@ -108,7 +108,7 @@ That puts an identity layer in front of the app on a subdomain (e.g. `pickup.you
 - Do **not** put a bare public reverse proxy in front of the app.
 - Change the default Admin PIN immediately.
 
-Full setup steps and checklist: **[docs/DEPLOYMENT.md §9](docs/DEPLOYMENT.md#9-remote-access-with-cloudflare-tunnel-recommended-pattern)**.  
+Full setup steps and checklist: **[docs/DEPLOYMENT.md §9](docs/DEPLOYMENT.md#9-remote-access-with-cloudflare-tunnel-recommended-pattern)**.
 Threat model summary: **[SECURITY.md](SECURITY.md)**.
 
 ---
@@ -122,7 +122,7 @@ Threat model summary: **[SECURITY.md](SECURITY.md)**.
 | [SECURITY.md](SECURITY.md) | Trust boundary, Access pattern, data handling |
 | [docs/Pickup-Student-Import-Template.xlsx](docs/Pickup-Student-Import-Template.xlsx) | CSV import template |
 
-Architecture overview deck: `Pickup-Overview.pptx` (in the repo root).
+Overview deck: [`docs/Pickup-Overview.pptx`](docs/Pickup-Overview.pptx). The deck and a short training video are also attached to the [latest release](https://github.com/mattlaughter/school-pickup/releases/latest).
 
 ---
 
@@ -144,6 +144,12 @@ Design goals: boring, small, maintainable by the next person who inherits it. Se
 ## License
 
 [MIT](LICENSE)
+
+---
+
+## Credits
+
+Pickup was created at the request of **Amanda Collins**, who also contributed to its design. See **[CONTRIBUTORS.md](CONTRIBUTORS.md)** for the full list.
 
 ---
 
